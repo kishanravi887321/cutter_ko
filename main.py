@@ -1,5 +1,8 @@
-from fastapi import FastAPI, Query
-from fastapi.responses import FileResponse, JSONResponse
+
+from fastapi import FastAPI, Query, Request
+from fastapi.responses import FileResponse, JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from starlette.background import BackgroundTasks
 import os
 import yt_dlp
@@ -8,15 +11,22 @@ import zipfile
 import math
 import uuid
 
+
 app = FastAPI()
 DOWNLOAD_FOLDER = "downloads"
 os.makedirs(DOWNLOAD_FOLDER, exist_ok=True)
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 def cleanup_file(path: str):
     if os.path.exists(path):
         os.remove(path)
 
+
+@app.get("/", response_class=HTMLResponse)
+def home(request: Request):
+    return templates.TemplateResponse("index.html", {"request": request})
 
 @app.get("/split")
 def split_video(

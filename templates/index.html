@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CutterKo - YouTube Video Splitter</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script defer src="/static/app.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="animated-title">CutterKo <span>🎬</span></h1>
+        <form id="splitForm">
+            <input type="url" id="url" name="url" placeholder="Paste YouTube URL" required>
+            <input type="number" id="interval" name="interval" placeholder="Interval (seconds)" min="1" required>
+            <input type="text" id="base_name" name="base_name" placeholder="Base name for clips" value="clip">
+            <button type="submit" class="animated-btn">Split & Download</button>
+        </form>
+        <div id="status"></div>
+    </div>
+</body>
+</html>
