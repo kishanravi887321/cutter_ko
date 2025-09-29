@@ -86,3 +86,96 @@ input:focus {
     70% { box-shadow: 0 0 0 10px rgba(30,60,114,0.05); }
     100% { box-shadow: 0 0 0 0 rgba(30,60,114,0.2); }
 }
+.video-preview {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    animation: slideIn 0.5s ease;
+}
+.video-preview img {
+    width: 120px;
+    height: 90px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.video-info h3 {
+    margin: 0 0 8px 0;
+    font-size: 1.2rem;
+}
+.video-info p {
+    margin: 4px 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+.input-group {
+    position: relative;
+}
+.input-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+    pointer-events: none;
+}
+.progress-steps {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+.step {
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: #666;
+    transition: all 0.3s;
+}
+.step.active {
+    background: #43cea2;
+    color: #fff;
+    transform: scale(1.05);
+}
+#progress-container {
+    margin-top: 24px;
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: translateX(-20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes morph {
+    0%, 100% { border-radius: 20px; }
+    25% { border-radius: 30px 20px 20px 30px; }
+    50% { border-radius: 20px 30px 30px 20px; }
+    75% { border-radius: 30px 20px 30px 20px; }
+}
+.glass {
+    animation: morph 8s infinite ease-in-out;
+}
+.animated-btn {
+    position: relative;
+    overflow: hidden;
+}
+.animated-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+.animated-btn:hover::before {
+    left: 100%;
+}
+.dark .video-preview {
+    background: rgba(40,44,54,0.3);
+}
+.dark .video-info p {
+    color: #ccc;
+}

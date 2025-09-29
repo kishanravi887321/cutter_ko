@@ -8,19 +8,51 @@
     <script defer src="/static/app.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1 class="animated-title">CutterKo <span>🎬</span></h1>
+    <div class="animated-bg">
+        <div class="circle circle1"></div>
+        <div class="circle circle2"></div>
+        <div class="circle circle3"></div>
+        <canvas id="particles"></canvas>
+    </div>
+    <button id="darkToggle" class="dark-toggle" title="Toggle dark mode">🌙</button>
+    <div class="container glass">
+        <h1 class="animated-title">CutterKo <span class="icon">🎬</span></h1>
+        <div id="video-preview" class="video-preview" style="display:none;">
+            <img id="thumbnail" src="" alt="Video Thumbnail">
+            <div class="video-info">
+                <h3 id="video-title">Video Title</h3>
+                <p id="video-duration">Duration: --</p>
+                <p id="estimated-clips">Estimated Clips: --</p>
+            </div>
+        </div>
         <form id="splitForm">
-            <input type="url" id="url" name="url" placeholder="Paste YouTube URL" required>
-            <input type="number" id="interval" name="interval" placeholder="Interval (seconds)" min="1" required>
-            <input type="text" id="base_name" name="base_name" placeholder="Base name for clips" value="clip">
+            <div class="input-group">
+                <input type="url" id="url" name="url" placeholder="Paste YouTube URL" required>
+                <span class="input-icon">🔗</span>
+            </div>
+            <div class="input-group">
+                <input type="number" id="interval" name="interval" placeholder="Interval (seconds)" min="1" required>
+                <span class="input-icon">⏱️</span>
+            </div>
+            <div class="input-group">
+                <input type="text" id="base_name" name="base_name" placeholder="Base name for clips" value="clip">
+                <span class="input-icon">📁</span>
+            </div>
             <button type="submit" class="animated-btn">Split & Download</button>
         </form>
-        <div id="progress-bar-container" style="display:none;">
-            <div id="progress-bar"></div>
+        <div id="progress-container" style="display:none;">
+            <div class="progress-steps">
+                <div class="step" id="step1">Downloading</div>
+                <div class="step" id="step2">Splitting</div>
+                <div class="step" id="step3">Zipping</div>
+            </div>
+            <div id="progress-bar-container">
+                <div id="progress-bar"></div>
+            </div>
         </div>
         <div id="status"></div>
         <a id="download-link" style="display:none;" class="download-btn" href="#" download>Download ZIP</a>
+        <canvas id="confetti" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
     </div>
 </body>
 </html>
