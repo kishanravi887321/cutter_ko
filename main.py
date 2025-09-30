@@ -49,20 +49,34 @@ def cleanup_file(path: str):
 def home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.get("/split")
 def split_video(
     url: str = Query(..., description="YouTube video URL"),
     interval: float = Query(..., description="Interval in seconds"),
     base_name: str = Query("clip", description="Base name for split clips"),
     background_tasks: BackgroundTasks = None
-):
+ ):
     try:
         # Step 1: Download full video
         full_filename = os.path.join(DOWNLOAD_FOLDER, "%(title)s.%(ext)s")
+        # Configure yt-dlp with safer defaults for production
+        cookiefile = os.environ.get("YT_COOKIES")  # path to cookies.txt if user sets it in Render env
         ydl_opts = {
             "outtmpl": full_filename,
             "format": "mp4",
+            # retry and pacing options to reduce 429s
+            "retries": 10,
+            "sleep_interval_requests": 2,
+            "sleep_interval": 1,
+            "http_chunk_size": 0,
+            "no_warnings": True,
+            "quiet": True,
+            # set a common browser UA to avoid bot blocks
+            "http_headers": {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115 Safari/537.36"
+            }
         }
+        if cookiefile:
+            ydl_opts["cookiefile"] = cookiefile
 
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(url, download=True)
@@ -100,11 +114,12 @@ def split_video(
             for clip in clip_files:
                 zipf.write(clip, os.path.basename(clip))
 
-        # Step 4: Cleanup clips + full video in background
-        background_tasks.add_task(cleanup_file, full_filepath)
-        for clip in clip_files:
-            background_tasks.add_task(cleanup_file, clip)
-        background_tasks.add_task(cleanup_file, zip_filename)  # delete zip after sending
+        # Step 4: Cleanup clips + full video in background (if BackgroundTasks provided)
+        if background_tasks:
+            background_tasks.add_task(cleanup_file, full_filepath)
+            for clip in clip_files:
+                background_tasks.add_task(cleanup_file, clip)
+            background_tasks.add_task(cleanup_file, zip_filename)  # delete zip after sending
 
         # Step 5: Send ZIP to client
         return FileResponse(
@@ -115,4 +130,21 @@ def split_video(
         )
 
     except Exception as e:
-        return JSONResponse(content={"error": str(e)}, status_code=500)
+        msg = str(e)
+        # Common guidance for known failure modes from yt-dlp
+        if "Sign in to confirm" in msg or "sign in" in msg.lower():
+            guidance = (
+                "YouTube is asking to sign in (captcha / age-restricted or bot detection). "
+                "Provide cookies exported from your browser and set the YT_COOKIES environment variable (path to cookies.txt) in your Render service, "
+                "or use browser-based authentication. See yt-dlp docs: https://github.com/yt-dlp/yt-dlp/wiki/FAQ#how-do-i-pass-cookies-to-yt-dlp"
+            )
+            return JSONResponse(content={"error": msg, "guidance": guidance}, status_code=403)
+
+        if "429" in msg or "Too Many Requests" in msg or "HTTP Error 429" in msg:
+            guidance = (
+                "The request was rate-limited (HTTP 429). Try using cookies, increasing sleep intervals, or run on a server with a different IP. "
+                "You can also set the YT_COOKIES env var to a cookies.txt file to reduce bot detection."
+            )
+            return JSONResponse(content={"error": msg, "guidance": guidance}, status_code=429)
+
+        return JSONResponse(content={"error": msg}, status_code=500)
